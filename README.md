@@ -6,3 +6,5 @@
 - Ch4: temporarily routes setup: ../products ../products/10/reviews 
 - Ch5: Products, Reviews migrated!
 - Ch6: set up Factories & seeded DB
+- Ch7: created relationships (belongsto, hasmany)
+- Ch8: added Product resources (single,multiple)
