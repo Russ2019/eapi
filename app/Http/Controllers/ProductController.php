@@ -3,7 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Model\Product;
+use App\Http\Resources\Product\ProductResource;
+use App\Http\Resources\Product\ProductCollection;
 use Illuminate\Http\Request;
+
+
+
+
 
 class ProductController extends Controller
 {
@@ -14,7 +20,8 @@ class ProductController extends Controller
      */
     public function index()
     {
-        return "Products(index) - comes here";
+        return ProductCollection::collection(Product::all());
+        //return ProductResource::collection(Product::all());
     }
 
     /**
@@ -46,7 +53,7 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-        //
+        return new ProductResource($product);
     }
 
     /**
