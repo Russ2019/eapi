@@ -3,16 +3,22 @@
 namespace Illuminate\Support;
 
 use Illuminate\Console\Application as Artisan;
-use Illuminate\Contracts\Support\DeferrableProvider;
 
 abstract class ServiceProvider
 {
     /**
      * The application instance.
      *
-     * @var \Illuminate\Contracts\Foundation\Application
+     * @var \Illuminate\Contracts\Foundation\Application|\Illuminate\Foundation\Application
      */
     protected $app;
+
+    /**
+     * Indicates if loading of the provider is deferred.
+     *
+     * @var bool
+     */
+    protected $defer = false;
 
     /**
      * The paths that should be published.
@@ -31,22 +37,12 @@ abstract class ServiceProvider
     /**
      * Create a new service provider instance.
      *
-     * @param  \Illuminate\Contracts\Foundation\Application  $app
+     * @param  \Illuminate\Contracts\Foundation\Application|\Illuminate\Foundation\Application  $app
      * @return void
      */
     public function __construct($app)
     {
         $this->app = $app;
-    }
-
-    /**
-     * Register any application services.
-     *
-     * @return void
-     */
-    public function register()
-    {
-        //
     }
 
     /**
@@ -58,11 +54,9 @@ abstract class ServiceProvider
      */
     protected function mergeConfigFrom($path, $key)
     {
-        if (! $this->app->configurationIsCached()) {
-            $this->app['config']->set($key, array_merge(
-                require $path, $this->app['config']->get($key, [])
-            ));
-        }
+        $config = $this->app['config']->get($key, []);
+
+        $this->app['config']->set($key, array_merge(require $path, $config));
     }
 
     /**
@@ -140,16 +134,16 @@ abstract class ServiceProvider
      * Register paths to be published by the publish command.
      *
      * @param  array  $paths
-     * @param  mixed  $groups
+     * @param  string  $group
      * @return void
      */
-    protected function publishes(array $paths, $groups = null)
+    protected function publishes(array $paths, $group = null)
     {
         $this->ensurePublishArrayInitialized($class = static::class);
 
         static::$publishes[$class] = array_merge(static::$publishes[$class], $paths);
 
-        foreach ((array) $groups as $group) {
+        if ($group) {
             $this->addPublishGroup($group, $paths);
         }
     }
@@ -301,6 +295,6 @@ abstract class ServiceProvider
      */
     public function isDeferred()
     {
-        return $this instanceof DeferrableProvider;
+        return $this->defer;
     }
 }

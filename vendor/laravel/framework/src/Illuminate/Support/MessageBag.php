@@ -3,11 +3,11 @@
 namespace Illuminate\Support;
 
 use Countable;
-use Illuminate\Contracts\Support\Arrayable;
-use Illuminate\Contracts\Support\Jsonable;
-use Illuminate\Contracts\Support\MessageBag as MessageBagContract;
-use Illuminate\Contracts\Support\MessageProvider;
 use JsonSerializable;
+use Illuminate\Contracts\Support\Jsonable;
+use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Contracts\Support\MessageProvider;
+use Illuminate\Contracts\Support\MessageBag as MessageBagContract;
 
 class MessageBag implements Arrayable, Countable, Jsonable, JsonSerializable, MessageBagContract, MessageProvider
 {
@@ -105,10 +105,6 @@ class MessageBag implements Arrayable, Countable, Jsonable, JsonSerializable, Me
      */
     public function has($key)
     {
-        if ($this->isEmpty()) {
-            return false;
-        }
-
         if (is_null($key)) {
             return $this->any();
         }
@@ -132,10 +128,6 @@ class MessageBag implements Arrayable, Countable, Jsonable, JsonSerializable, Me
      */
     public function hasAny($keys = [])
     {
-        if ($this->isEmpty()) {
-            return false;
-        }
-
         $keys = is_array($keys) ? $keys : func_get_args();
 
         foreach ($keys as $key) {

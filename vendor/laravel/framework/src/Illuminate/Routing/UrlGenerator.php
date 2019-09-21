@@ -3,16 +3,15 @@
 namespace Illuminate\Routing;
 
 use Closure;
-use Illuminate\Contracts\Routing\UrlGenerator as UrlGeneratorContract;
-use Illuminate\Contracts\Routing\UrlRoutable;
-use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\InteractsWithTime;
 use Illuminate\Support\Str;
-use Illuminate\Support\Traits\Macroable;
+use Illuminate\Http\Request;
 use InvalidArgumentException;
-use Symfony\Component\Routing\Exception\RouteNotFoundException;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Traits\Macroable;
+use Illuminate\Support\InteractsWithTime;
+use Illuminate\Contracts\Routing\UrlRoutable;
+use Illuminate\Contracts\Routing\UrlGenerator as UrlGeneratorContract;
 
 class UrlGenerator implements UrlGeneratorContract
 {
@@ -63,9 +62,10 @@ class UrlGenerator implements UrlGeneratorContract
     /**
      * A cached copy of the URL scheme for the current request.
      *
+     * @deprecated In 5.8, this will change to $cachedScheme
      * @var string|null
      */
-    protected $cachedScheme;
+    protected $cachedSchema;
 
     /**
      * The root namespace being applied to controller actions.
@@ -114,7 +114,7 @@ class UrlGenerator implements UrlGeneratorContract
      *
      * @param  \Illuminate\Routing\RouteCollection  $routes
      * @param  \Illuminate\Http\Request  $request
-     * @param  string|null  $assetRoot
+     * @param  string  $assetRoot
      * @return void
      */
     public function __construct(RouteCollection $routes, Request $request, $assetRoot = null)
@@ -300,11 +300,11 @@ class UrlGenerator implements UrlGeneratorContract
             return $secure ? 'https://' : 'http://';
         }
 
-        if (is_null($this->cachedScheme)) {
-            $this->cachedScheme = $this->forceScheme ?: $this->request->getScheme().'://';
+        if (is_null($this->cachedSchema)) {
+            $this->cachedSchema = $this->forceScheme ?: $this->request->getScheme().'://';
         }
 
-        return $this->cachedScheme;
+        return $this->cachedSchema;
     }
 
     /**
@@ -312,7 +312,7 @@ class UrlGenerator implements UrlGeneratorContract
      *
      * @param  string  $name
      * @param  array  $parameters
-     * @param  \DateTimeInterface|\DateInterval|int|null  $expiration
+     * @param  \DateTimeInterface|\DateInterval|int  $expiration
      * @param  bool  $absolute
      * @return string
      */
@@ -366,7 +366,7 @@ class UrlGenerator implements UrlGeneratorContract
 
         $signature = hash_hmac('sha256', $original, call_user_func($this->keyResolver));
 
-        return hash_equals($signature, (string) $request->query('signature', '')) &&
+        return  hash_equals($signature, (string) $request->query('signature', '')) &&
                ! ($expires && Carbon::now()->getTimestamp() > $expires);
     }
 
@@ -378,7 +378,7 @@ class UrlGenerator implements UrlGeneratorContract
      * @param  bool  $absolute
      * @return string
      *
-     * @throws \Symfony\Component\Routing\Exception\RouteNotFoundException
+     * @throws \InvalidArgumentException
      */
     public function route($name, $parameters = [], $absolute = true)
     {
@@ -386,7 +386,7 @@ class UrlGenerator implements UrlGeneratorContract
             return $this->toRoute($route, $parameters, $absolute);
         }
 
-        throw new RouteNotFoundException("Route [{$name}] not defined.");
+        throw new InvalidArgumentException("Route [{$name}] not defined.");
     }
 
     /**
@@ -399,7 +399,7 @@ class UrlGenerator implements UrlGeneratorContract
      *
      * @throws \Illuminate\Routing\Exceptions\UrlGenerationException
      */
-    public function toRoute($route, $parameters, $absolute)
+    protected function toRoute($route, $parameters, $absolute)
     {
         return $this->routeUrl()->to(
             $route, $this->formatParameters($parameters), $absolute
@@ -485,7 +485,7 @@ class UrlGenerator implements UrlGeneratorContract
      * Get the base URL for the request.
      *
      * @param  string  $scheme
-     * @param  string|null  $root
+     * @param  string  $root
      * @return string
      */
     public function formatRoot($scheme, $root = null)
@@ -584,7 +584,7 @@ class UrlGenerator implements UrlGeneratorContract
      */
     public function forceScheme($scheme)
     {
-        $this->cachedScheme = null;
+        $this->cachedSchema = null;
 
         $this->forceScheme = $scheme.'://';
     }
@@ -661,7 +661,7 @@ class UrlGenerator implements UrlGeneratorContract
         $this->request = $request;
 
         $this->cachedRoot = null;
-        $this->cachedScheme = null;
+        $this->cachedSchema = null;
         $this->routeGenerator = null;
     }
 
